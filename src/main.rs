@@ -1,22 +1,12 @@
+// All backends expose single `run` functions that will create a window with debug widget
 mod boilerplate_glium;
+mod boilerplate_glow;
+mod boilerplate_sdl2;
 
 fn main() {
-    boilerplate_glium::run();
+    // NOTE: On my machine glow and glium backends cause double letters in text inputs
+    // only sdl2 works correctly
 
-    // let mut counter = 0;
-    // let mut buf = String::new();
-
-    // render(|ui| {
-    //     ui.window("Domineering")
-    //         .opened(&mut true)
-    //         .position([20.0, 20.0], Condition::Appearing)
-    //         .size([500.0, 350.0], Condition::Appearing)
-    //         .resizable(false)
-    //         .build(|| {
-    //             ui.text("foo");
-    //             ui.input_text("bar", &mut buf).build();
-    //         });
-
-    //     counter += 1;
-    // });
+    // NOTE: glium backend looks blurry
+    boilerplate_sdl2::run();
 }

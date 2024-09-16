@@ -10,7 +10,6 @@ use glutin::{
     display::{GetGlDisplay, GlDisplay},
     surface::{GlSurface, Surface, SurfaceAttributesBuilder, WindowSurface},
 };
-use imgui::Ui;
 use imgui_winit_support::{
     winit::{
         dpi::LogicalSize,
@@ -23,7 +22,8 @@ use raw_window_handle::HasRawWindowHandle;
 
 const TITLE: &str = "Hello, imgui-rs!";
 
-pub fn render(mut draw: impl FnMut(&mut Ui)) {
+#[allow(dead_code)]
+pub fn run() {
     // Common setup for creating a winit window and imgui context, not specifc
     // to this renderer at all except that glutin is used to create the window
     // since it will give us access to a GL context
@@ -64,7 +64,7 @@ pub fn render(mut draw: impl FnMut(&mut Ui)) {
                     unsafe { ig_renderer.gl_context().clear(glow::COLOR_BUFFER_BIT) };
 
                     let ui = imgui_context.frame();
-                    draw(ui);
+                    ui.show_demo_window(&mut true);
 
                     winit_platform.prepare_render(ui, &window);
                     let draw_data = imgui_context.render();
@@ -97,14 +97,6 @@ pub fn render(mut draw: impl FnMut(&mut Ui)) {
                     }
                     winit_platform.handle_event(imgui_context.io_mut(), &window, &event);
                 }
-                winit::event::Event::WindowEvent { event: ref e, .. } => match e {
-                    winit::event::WindowEvent::KeyboardInput { .. } => {
-                        dbg!(e);
-                    }
-                    _ => {
-                        winit_platform.handle_event(imgui_context.io_mut(), &window, &event);
-                    }
-                },
                 event => {
                     winit_platform.handle_event(imgui_context.io_mut(), &window, &event);
                 }

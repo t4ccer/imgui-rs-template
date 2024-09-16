@@ -16,6 +16,7 @@ use winit::{
 
 const TITLE: &str = "Hello, imgui-rs!";
 
+#[allow(dead_code)]
 pub fn run() {
     // Common setup for creating a winit window and imgui context, not specifc
     // to this renderer at all except that glutin is used to create the window
