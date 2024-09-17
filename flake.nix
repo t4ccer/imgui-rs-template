@@ -33,7 +33,7 @@
         , ...
         }:
         let
-          globalPkgs = pkgs;
+          hostPkgs = pkgs;
 
           rustToolchain = pkgs.rust-bin.fromRustupToolchain {
             channel = "stable";
@@ -75,6 +75,10 @@
                   src = ./.;
                   cargoLock.lockFile = ./Cargo.lock;
 
+                  nativeBuildInputs = [
+                    hostPkgs.pkg-config
+                  ];
+
                   buildInputs = [
                     pkgs.freetype
                     pkgs.SDL2
@@ -93,6 +97,7 @@
 
             nativeBuildInputs = [
               pkgs.wineWow64Packages.unstableFull
+              pkgs.pkg-config
               rustToolchain
             ];
 
