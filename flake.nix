@@ -1,5 +1,5 @@
 {
-  description = "cgrs";
+  description = "imgui-rs-template";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
     flake-parts = {
@@ -33,6 +33,8 @@
         , ...
         }:
         let
+          globalPkgs = pkgs;
+
           rustToolchain = pkgs.rust-bin.fromRustupToolchain {
             channel = "stable";
             components = [ "rust-analyzer" "rust-src" "rustfmt" "rustc" "cargo" ];
@@ -64,7 +66,41 @@
             };
           };
 
-          packages = { };
+          packages =
+            let
+              mkDemo = pkgs: pkgs.rustPlatform.buildRustPackage
+                {
+                  name = "imgui-rs-template";
+
+                  src = ./.;
+                  cargoLock.lockFile = ./Cargo.lock;
+
+                  nativeBuildInputs =
+                    pkgs.lib.optional pkgs.stdenv.targetPlatform.isUnix pkgs.makeWrapper;
+
+                  buildInputs = [
+                    pkgs.libgcc
+                    pkgs.freetype
+                    pkgs.SDL2
+                  ] ++ pkgs.lib.optionals pkgs.stdenv.targetPlatform.isUnix [
+                    pkgs.mesa
+                    pkgs.wayland
+                    pkgs.xorg.libX11
+                    pkgs.xorg.libXcursor
+                    pkgs.xorg.libXi
+                    pkgs.xorg.libXinerama
+                    pkgs.xorg.libXrandr
+                  ] ++ pkgs.lib.optionals pkgs.stdenv.targetPlatform.isWindows [
+                    pkgs.windows.mingw_w64_pthreads
+                  ];
+                } // pkgs.lib.optionalAttrs pkgs.stdenv.targetPlatform.isWindows {
+                env.DXSDK_DIR = "${pkgs.directx-headers}/include";
+              };
+            in
+            {
+              demo-linux = mkDemo pkgs;
+              demo-windows = mkDemo pkgs.pkgsCross.mingwW64;
+            };
 
           devShells.default = pkgs.mkShell {
             shellHook = ''
@@ -73,18 +109,11 @@
             '';
 
             nativeBuildInputs = [
-              pkgs.clang
-              pkgs.cmake
-              pkgs.pkgsCross.mingwW64.stdenv.cc
-              pkgs.pkgsStatic.stdenv.cc
               pkgs.wineWow64Packages.unstableFull
               rustToolchain
-              pkgs.python3
-              pkgs.pkg-config
             ];
 
             buildInputs = [
-              # pkgs.clang.libc
               pkgs.glfw
               pkgs.mesa
               pkgs.wayland
@@ -95,29 +124,8 @@
               pkgs.xorg.libXrandr
               pkgs.libgcc
               pkgs.freetype
+              pkgs.SDL2
             ];
-
-            env = {
-              CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS = "-L${pkgs.pkgsCross.mingwW64.windows.mingw_w64_pthreads}/lib";
-              CC_x86_64_pc_windows_gnu = "x86_64-w64-mingw32-gcc";
-              CXX_x86_64_pc_windows_gnu = "x86_64-w64-mingw32-g++";
-              CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER = "x86_64-w64-mingw32-gcc";
-
-              # CC_x86_64_unknown_linux_musl = "x86_64-unknown-linux-musl-gcc";
-              # CXX_x86_64_unknown_linux_musl = "x86_64-unknown-linux-musl-g++";
-              # CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER = "x86_64-unknown-linux-musl-gcc";
-
-              LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
-              LD_LIBRARY_PATH = lib.makeLibraryPath [
-                pkgs.libGL
-                pkgs.xorg.libX11
-                pkgs.xorg.libXrandr
-                pkgs.xorg.libXinerama
-                pkgs.xorg.libXcursor
-                pkgs.xorg.libXi
-                pkgs.libxkbcommon
-              ];
-            };
           };
         };
     };
