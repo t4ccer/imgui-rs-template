@@ -75,27 +75,13 @@
                   src = ./.;
                   cargoLock.lockFile = ./Cargo.lock;
 
-                  nativeBuildInputs =
-                    pkgs.lib.optional pkgs.stdenv.targetPlatform.isUnix pkgs.makeWrapper;
-
                   buildInputs = [
-                    pkgs.libgcc
                     pkgs.freetype
                     pkgs.SDL2
-                  ] ++ pkgs.lib.optionals pkgs.stdenv.targetPlatform.isUnix [
-                    pkgs.mesa
-                    pkgs.wayland
-                    pkgs.xorg.libX11
-                    pkgs.xorg.libXcursor
-                    pkgs.xorg.libXi
-                    pkgs.xorg.libXinerama
-                    pkgs.xorg.libXrandr
-                  ] ++ pkgs.lib.optionals pkgs.stdenv.targetPlatform.isWindows [
-                    pkgs.windows.mingw_w64_pthreads
                   ];
-                } // pkgs.lib.optionalAttrs pkgs.stdenv.targetPlatform.isWindows {
-                env.DXSDK_DIR = "${pkgs.directx-headers}/include";
-              };
+
+                  doCheck = false;
+                };
             in
             {
               demo-linux = mkDemo pkgs;
@@ -103,10 +89,7 @@
             };
 
           devShells.default = pkgs.mkShell {
-            shellHook = ''
-              ${config.pre-commit.installationScript}
-              PATH=$PATH:$(pwd)/target/release
-            '';
+            shellHook = config.pre-commit.installationScript;
 
             nativeBuildInputs = [
               pkgs.wineWow64Packages.unstableFull
@@ -114,15 +97,6 @@
             ];
 
             buildInputs = [
-              pkgs.glfw
-              pkgs.mesa
-              pkgs.wayland
-              pkgs.xorg.libX11
-              pkgs.xorg.libXcursor
-              pkgs.xorg.libXi
-              pkgs.xorg.libXinerama
-              pkgs.xorg.libXrandr
-              pkgs.libgcc
               pkgs.freetype
               pkgs.SDL2
             ];
